@@ -50,7 +50,7 @@ app.get("/connected", (req, res) => {
 
 // GET - retrieve students from database
 app.get("/students", (req, res) => {
-  console.log("GET - client wants to retrieve student data...")
+  console.log("GET - client wants to retrieve student data using students")
   //console.log(req.url.substring(9))
   let searchParams = new URLSearchParams(req.url.substring(9))
   //console.log("searchParams: " + searchParams.toString())
@@ -64,34 +64,34 @@ app.get("/students", (req, res) => {
     let email = searchParams.get('email')
     //console.log(`id: ${id}, fname: ${fname}, lname: ${lname}, email: ${email}`)
     if (id) {
-      query = `SELECT get_student_by_id(${id}) AS student`
+      query = `SELECT getStudentById(${id}) AS student`
       console.log("Getting student that has id " + id + "...")
     }
     else if (email) {
-      query = `SELECT get_student_by_email('${email}') AS student`
+      query = `SELECT getStudentByEmail('${email}') AS student`
       console.log("Getting student that has email " + email + "...")
     }
     else if (fname && lname) {
-      query = `SELECT get_student_by_fullname('${fname}', '${lname}') AS student`
+      query = `SELECT getStudentByFullName('${fname}', '${lname}') AS student`
       console.log("Getting students that have fname " + fname + " and lname " + lname + "...")
     }
     else if (lname) {
-      query = `SELECT get_student_by_lname('${lname}') AS student`
+      query = `SELECT getStudentByLastName('${lname}') AS student`
       console.log("Getting students that have lname " + lname + "...")
     }
     else if (fname) {
-      query = `SELECT get_student_by_fname('${fname}') AS student`
+      query = `SELECT getStudentByFirstName('${fname}') AS student`
       console.log("Getting students that have fname " + fname + "...")
     }
   }
   else {
-    query = `SELECT get_students() AS student`
+    query = `SELECT getStudents() AS student`
     console.log("Getting all students...")
   }
-  
+
   db
     .query(query)
-    .then((results) => {
+    .then(results => {
       console.log("Sending response back to client...")
       let students = []
       for (let i = 0; i < results.rowCount; i++) {
@@ -99,7 +99,14 @@ app.get("/students", (req, res) => {
           id: results.rows[i]["student"]["id"],
           fname: results.rows[i]["student"]["first_name"],
           lname: results.rows[i]["student"]["last_name"],
-          email: results.rows[i]["student"]["email"]
+          email: results.rows[i]["student"]["email"],
+          links: [
+            {
+              href: `students/${results.rows[i]["student"]["id"]}`,
+              rel: 'students',
+              type: 'GET'
+            }
+          ]
         }
         students.push(student)
       }
@@ -113,8 +120,37 @@ app.get("/students", (req, res) => {
 
 // GET - get students using URI of id
 app.get("/students/:id", (req, res) => {
-  console.log("got here")
-  res.send("hey")
+  console.log("GET - client wants to retrieve student data using students/:id")
+  let query = `SELECT getStudentById(${req.params.id}) AS student`
+  db
+    .query(query)
+    .then(results => {
+      console.log("Sending response back to client...")
+      if (results.rowCount == 0) {
+        res.status(404).send(`Student with id ${req.params.id} does not exist.`)
+      } 
+      else {
+        console.log("Sending response back to client...")
+        let student = {
+          id: results.rows[0]["student"]["id"],
+          fname: results.rows[0]["student"]["first_name"],
+          lname: results.rows[0]["student"]["last_name"],
+          email: results.rows[0]["student"]["email"],
+          links: [
+            {
+              href: `students/${results.rows[0]["student"]["id"]}`,
+              rel: 'students',
+              type: 'GET'
+            }
+          ]
+        }
+        return res.status(200).send(student)
+      }
+    })
+    .catch(err => {
+      console.log(err)
+      return res.status(500).send("Error occurred on server.")
+    })
 })
 
 // POST - insert a student into the database
@@ -128,10 +164,10 @@ app.post("/students", (req, res) => {
     return res.status(400).send('One or more input fields are empty. Cannot process request.')
   }
   console.log("Adding student to database...")
-  let query = `SELECT add_student('${fname}', '${lname}', '${email}') AS student`
+  let query = `SELECT addStudent('${fname}', '${lname}', '${email}') AS student`
   db
     .query(query)
-    .then((results) => {
+    .then(results => {
       console.log("Sending response back to client...")
       let student = results.rows[0]["student"]
       if (student["id"] == null) {
@@ -149,7 +185,7 @@ app.post("/students", (req, res) => {
       if (err.code == 23505)
         return res.status(400).send('Cannot add student. Email is already registered.')
       else
-        return res.status(500).send('Error occurred in database.')
+        return res.status(500).send("Error occurred on server.")
     })
 })
 
@@ -166,10 +202,10 @@ app.delete("/students/:email", (req, res) => {
   if (email == '')
     return res.status(400).send('Email field is empty. Cannot process request.')
   console.log("Removing student from database...")
-  let query = `SELECT remove_student_by_email('${email}') AS student`
+  let query = `SELECT removeStudentByEmail('${email}') AS student`
   db
     .query(query)
-    .then((results) => {
+    .then(results => {
       console.log("Sending response back to client...")
       let student = results.rows[0]["student"]
       if (student["email"] == null) {
@@ -184,7 +220,7 @@ app.delete("/students/:email", (req, res) => {
     })
     .catch(err => {
       console.log(err)
-      return res.status(500).send('Error occurred in database.')
+      return res.status(500).send("Error occurred on server.")
     })
 })
 

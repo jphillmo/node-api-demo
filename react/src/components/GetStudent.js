@@ -31,13 +31,12 @@ function GetStudent(props) {
           else
             setResults([])
           console.log(res.data)
-          //console.log(results)
           setResponse(`${Object.keys(res.data).length} student(s) were found.`)
           console.log(`${Object.keys(res.data).length} student(s) were found.`)
-          //console.log(response)
         })
         .catch(err => {
           console.log(err)
+          setResponse("Could not search for student due to no server connection")
         })
       setStudent({id: '', fname: '', lname: '', email: ''})
     }
@@ -164,6 +163,7 @@ function GetStudent(props) {
       <ul>
         {results.map(student => (
           <li key={student.id}>
+            ID: {student.id},
             First Name: {student.fname},
             Last Name: {student.lname},
             Email: {student.email}

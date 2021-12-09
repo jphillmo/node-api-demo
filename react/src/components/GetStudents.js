@@ -4,19 +4,25 @@ import axios from 'axios'
 function GetStudents(props) {
 
   const [results, setResults] = useState([])
-  
+  const [response, setResponse] = useState('')
+
   const getStudents = () => {
     axios
       .get(`${props.server}/students`)
       .then(res => {
-        if (res.data.length > 0)
+        if (res.data.length > 0) {
           setResults(res.data)
-        else
+          setResponse(`Total number of students: ${res.data.length}`)
+        }
+        else {
           setResults([])
+          setResponse("There are no students in the database")
+        }
         console.log(res.data)
       })
       .catch(err => {
         console.log(err)
+        setResponse("Could not get student data due to no server connection")
       })
   }
 
@@ -24,9 +30,11 @@ function GetStudents(props) {
     <div>
       <h4>List of Students:</h4>
       <button onClick={getStudents}>Get all students</button><br />
+      {response}
       <ul>
         {results.map(student => (
           <li key={student.id}>
+            ID: {student.id},
             First Name: {student.fname},
             Last Name: {student.lname},
             Email: {student.email}

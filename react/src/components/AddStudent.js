@@ -20,8 +20,13 @@ function AddStudent(props) {
         })
         .catch(err => {
           console.log(err)
-          console.log(err.response.data)
-          setResponse(err.response.data)
+          if (err.response) {
+            console.log(err.response.data)
+            setResponse(err.response.data)
+          }
+          else {
+            setResponse("Could not add student due to no server connection")
+          }
         })
       setStudent({fname: '', lname: '', email: ''})
     }

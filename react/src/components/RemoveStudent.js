@@ -17,8 +17,12 @@ function RemoveStudent(props) {
         })
         .catch(err => {
           console.log(err)
-          console.log(err.response.data)
-          setResponse(err.response.data)
+          if (err.response) {
+            console.log(err.response.data)
+            setResponse(err.response.data)
+          }
+          else
+            setResponse("Could not remove student due to no server connection")
         })
       setStudent({email: ''})
     }

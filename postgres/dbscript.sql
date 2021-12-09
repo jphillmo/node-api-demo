@@ -1,9 +1,10 @@
--- Run the following command first: psql -U <username>
+-- Run the following command to open PostgreSQL: psql -U <username>
 -- Then enter the password for the user
 
 -- To run this script inside psql, enter following at command line: \i <file-location>
 -- ex. \i C:/Users/User/Desktop/dbscript.sql
 
+-- NOTE: If user is not 'postgres', then change the OWNER below to the correct user
 CREATE DATABASE apidemo OWNER = postgres;
 
 \c apidemo;
