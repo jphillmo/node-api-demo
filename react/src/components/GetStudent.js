@@ -8,7 +8,7 @@ function GetStudent(props) {
   const [results, setResults] = useState([])
   const [search, setSearch] = useState(0)
   
-  const getStudent = (e) => {
+  const getStudent = async (e) => {
     e.preventDefault()
     let searchParams = ''
     if (search === 1)
@@ -23,21 +23,20 @@ function GetStudent(props) {
       student.id > 0 ? searchParams = `?id=${student.id}` : setResponse('Please enter a positive integer for student ID.')
 
     if (searchParams) {
-      axios
-        .get(`${props.server}/students${searchParams}`)
-        .then(res => {
-          if (res.data.length > 0)
-            setResults(res.data)
-          else
-            setResults([])
-          console.log(res.data)
-          setResponse(`${Object.keys(res.data).length} student(s) were found.`)
-          console.log(`${Object.keys(res.data).length} student(s) were found.`)
-        })
-        .catch(err => {
-          console.log(err)
-          setResponse("Could not search for student due to no server connection")
-        })
+      try {
+        const res = await axios.get(`${props.server}/students${searchParams}`)
+        if (res.data.length > 0)
+          setResults(res.data)
+        else
+          setResults([])
+        console.log(res.data)
+        setResponse(`${Object.keys(res.data).length} student(s) were found.`)
+        console.log(`${Object.keys(res.data).length} student(s) were found.`)
+      }
+      catch(err) {
+        console.log(err)
+        setResponse("Could not search for student due to no server connection")
+      }
       setStudent({id: '', fname: '', lname: '', email: ''})
     }
     else setResults([])

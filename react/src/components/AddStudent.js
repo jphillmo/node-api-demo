@@ -7,27 +7,24 @@ function AddStudent(props) {
   const [response, setResponse] = useState('')
 
   // Connect to api and add student to database
-  const addStudent = (e) => {
+  const addStudent = async (e) => {
     e.preventDefault()
     if (student.fname && student.lname && student.email) {
-      axios
-        .post(`${props.server}/students`, {
-          params: student
-        })
-        .then(res => {
-          console.log(res.data)
-          setResponse(`${res.data.fname} ${res.data.lname} at ${res.data.email} was added!`)
-        })
-        .catch(err => {
-          console.log(err)
-          if (err.response) {
-            console.log(err.response.data)
-            setResponse(err.response.data)
-          }
-          else {
-            setResponse("Could not add student due to no server connection")
-          }
-        })
+      try {
+        const res = await axios.post(`${props.server}/students`, { params: student})
+        console.log(res.data)
+        setResponse(`${res.data.fname} ${res.data.lname} at ${res.data.email} was added!`)
+      }
+      catch(err) {
+        console.log(err)
+        if (err.response) {
+          console.log(err.response.data)
+          setResponse(err.response.data)
+        }
+        else {
+          setResponse("Could not add student due to no server connection")
+        }
+      }
       setStudent({fname: '', lname: '', email: ''})
     }
     else setResponse("One or more input fields are empty.  Please enter a first name, last name, and email.")

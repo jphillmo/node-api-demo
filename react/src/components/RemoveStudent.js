@@ -6,24 +6,23 @@ function RemoveStudent(props) {
   const [student, setStudent] = useState({email: ''})
   const [response, setResponse] = useState('')
 
-  const removeStudent = (e) => {
+  const removeStudent = async (e) => {
     e.preventDefault()
     if (student.email) {
-      axios
-        .delete(`${props.server}/students/${student.email}`)
-        .then(res => {
-          console.log(res.data)
-          setResponse(`${res.data.fname} ${res.data.lname} at ${res.data.email} was removed!`)
-        })
-        .catch(err => {
-          console.log(err)
-          if (err.response) {
-            console.log(err.response.data)
-            setResponse(err.response.data)
-          }
-          else
-            setResponse("Could not remove student due to no server connection")
-        })
+      try {
+        const res = await axios.delete(`${props.server}/students/${student.email}`)
+        console.log(res.data)
+        setResponse(`${res.data.fname} ${res.data.lname} at ${res.data.email} was removed!`)
+      }
+      catch(err) {
+        console.log(err)
+        if (err.response) {
+          console.log(err.response.data)
+          setResponse(err.response.data)
+        }
+        else
+          setResponse("Could not remove student due to no server connection")
+      }
       setStudent({email: ''})
     }
     else setResponse('Please enter a student email.')
