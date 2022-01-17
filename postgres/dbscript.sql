@@ -109,10 +109,31 @@ END;
 $$
 LANGUAGE 'plpgsql';
 
+CREATE OR REPLACE FUNCTION updateStudent(s_id INTEGER, s_fname VARCHAR, s_lname VARCHAR, s_email VARCHAR)
+RETURNS json AS
+$$
+DECLARE return_value student%ROWTYPE;
+BEGIN
+	INSERT INTO student (id, first_name, last_name, email)
+	VALUES (s_id, s_fname, s_lname, s_email)
+	ON CONFLICT (id)
+	DO 
+	UPDATE 
+	SET id = s_id,
+		first_name = s_fname,
+		last_name = s_lname,
+		email = s_email
+	RETURNING * INTO return_value;
+
+	RETURN to_json(return_value);
+END;
+$$
+LANGUAGE 'plpgsql';
+
 CREATE OR REPLACE FUNCTION updateStudentName(s_newFirst VARCHAR, s_newLast VARCHAR, s_email VARCHAR)
 RETURNS json AS
 $$
-DECLARE return_value student%rowtype;
+DECLARE return_value student%ROWTYPE;
 BEGIN
 	UPDATE student
 	SET first_name = s_newFirst,
@@ -128,7 +149,7 @@ LANGUAGE 'plpgsql';
 CREATE OR REPLACE FUNCTION updateStudentEmail(s_oldEmail VARCHAR, s_newEmail VARCHAR)
 RETURNS json AS
 $$
-DECLARE return_value student%rowtype;
+DECLARE return_value student%ROWTYPE;
 BEGIN
 	UPDATE student
 	SET email = s_newEmail
@@ -143,7 +164,7 @@ LANGUAGE 'plpgsql';
 CREATE OR REPLACE FUNCTION removeStudentById(s_id INTEGER)
 RETURNS json AS
 $$
-DECLARE return_value student%rowtype;
+DECLARE return_value student%ROWTYPE;
 BEGIN 
 	DELETE FROM student
 	WHERE id = s_id
@@ -157,7 +178,7 @@ LANGUAGE 'plpgsql';
 CREATE OR REPLACE FUNCTION removeStudentByEmail(s_email VARCHAR)
 RETURNS json AS
 $$
-DECLARE return_value student%rowtype;
+DECLARE return_value student%ROWTYPE;
 BEGIN 
 	DELETE FROM student
 	WHERE email = s_email
